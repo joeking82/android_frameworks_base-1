@@ -22,6 +22,8 @@ import android.content.om.OverlayInfo;
 import android.os.RemoteException;
 import android.provider.Settings;
 
+import com.android.internal.R;
+
 /**
  * Helper class for Color Manager that works as a bridge
  * to get/set toxyc overlays.
@@ -46,6 +48,11 @@ public class ColorManagerHelper {
             "com.toxyc.theme.hazard",
             "com.toxyc.theme.settings.hazard",
     };
+
+    private static final String[] getClocks(Context ctx) {
+        final String list = ctx.getResources().getString(R.string.custom_clock_styles);
+        return list.split(",");
+    }
 
     // Accent Packages
     private static final String ACCENT_DEFAULT = "default";
@@ -98,6 +105,36 @@ public class ColorManagerHelper {
             ACCENT_GREY,
             ACCENT_WHITE,
     };
+
+    // Switches the analog clock from one to another or back to stock
+    public static void updateClocks(IOverlayManager om, int userId, int clockSetting, Context ctx) {
+        // all clock already unloaded due to StatusBar observer unloadClocks call
+        // set the custom analog clock overlay
+        if (clockSetting > 4) {
+            try {
+                final String[] clocks = getClocks(ctx);
+                om.setEnabled(clocks[clockSetting],
+                        true, userId);
+            } catch (RemoteException e) {
+                Log.w(TAG, "Can't change analog clocks", e);
+            }
+        }
+    }
+
+    // Unload all the analog clocks
+    public static void unloadClocks(IOverlayManager om, int userId, Context ctx) {
+        // skip index 0
+        final String[] clocks = getClocks(ctx);
+        for (int i = 1; i < clocks.length; i++) {
+            String clock = clocks[i];
+            try {
+                om.setEnabled(clock,
+                        false /*disable*/, userId);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static boolean isUsingDarkTheme(IOverlayManager om, int userId) {
         OverlayInfo themeInfo = null;
