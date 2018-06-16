@@ -87,4 +87,7 @@
   <!-- Custom clocks -->
   <java-symbol type="string" name="custom_clock_styles" />
 
+  <!-- Whether the device requires overlays to be in /system/overlay -->
+    <java-symbol type="bool" name="config_hasSystemOverlayPath" />
+
 </resources>
